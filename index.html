@@ -431,7 +431,7 @@ function renderLogin(){
       </div>
       <div class="field">
         <label>Kata Sandi</label>
-        <input type="password" id="login-pass" placeholder="Masukkan kata sandi" />
+        <input type="password" id="login-pass" placeholder="Masukkan kata sandi" onkeydown="if(event.key==='Enter'){ event.preventDefault(); doLogin(); }" />
       </div>
       <button class="btn gold" style="width:100%;padding:11px;font-size:14px;" onclick="doLogin()">Masuk</button>
 
