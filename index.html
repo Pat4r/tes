@@ -6,7 +6,6 @@
 <title>Sistem Absensi - Laporan Kekuatan Apel</title>
 <link rel="icon" type="image/jpeg" href="logo.jpg">
 <link rel="stylesheet" href="main.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -808,11 +807,24 @@ function signerCardEditHtml(screenType, role, label, s){
       </div>
     </div>`;
 }
+/* Pa Jaga Lama/Baru diisi di Serah Terima adalah sumber data utama:
+   begitu diisi di sana, otomatis disalin ke Laporan Kegiatan supaya
+   tidak perlu isi dua kali. (Field "Mengetahui/Komandan" tidak ikut
+   disinkron, karena itu memang berbeda per laporan.) */
+async function mirrorSignerToKegiatan(role, key, val){
+  if(role !== 'paJagaLama' && role !== 'paJagaBaru') return;
+  if(!kegiatanData) kegiatanData = await getKegiatan(state.operatorDate);
+  kegiatanData[role][key] = val;
+  await saveKegiatan(state.operatorDate, kegiatanData);
+}
 async function setSignerField(screenType, role, key, val){
   const data = screenType==='kegiatan' ? kegiatanData : serahTerimaData;
   data[role][key] = val;
   if(screenType==='kegiatan') await saveKegiatan(state.operatorDate, data);
-  else await saveSerahTerimaData(state.operatorDate, data);
+  else {
+    await saveSerahTerimaData(state.operatorDate, data);
+    await mirrorSignerToKegiatan(role, key, val);
+  }
 }
 function uploadSignerTtd(screenType, role, inputEl){
   const file = inputEl.files[0]; if(!file) return;
@@ -821,7 +833,10 @@ function uploadSignerTtd(screenType, role, inputEl){
     const data = screenType==='kegiatan' ? kegiatanData : serahTerimaData;
     data[role].ttd = e.target.result;
     if(screenType==='kegiatan') await saveKegiatan(state.operatorDate, data);
-    else await saveSerahTerimaData(state.operatorDate, data);
+    else {
+      await saveSerahTerimaData(state.operatorDate, data);
+      await mirrorSignerToKegiatan(role, 'ttd', e.target.result);
+    }
     renderOperator(true);
   };
   reader.readAsDataURL(file);
@@ -830,7 +845,10 @@ async function removeSignerTtd(screenType, role){
   const data = screenType==='kegiatan' ? kegiatanData : serahTerimaData;
   data[role].ttd = "";
   if(screenType==='kegiatan') await saveKegiatan(state.operatorDate, data);
-  else await saveSerahTerimaData(state.operatorDate, data);
+  else {
+    await saveSerahTerimaData(state.operatorDate, data);
+    await mirrorSignerToKegiatan(role, 'ttd', "");
+  }
   renderOperator(true);
 }
 
@@ -952,13 +970,10 @@ async function setBarangRow(rowId, key, val){
 }
 
 /* ---- Preview Cetak di layar =================
-   Sebelumnya laporan langsung dikirim ke window.print() tanpa pernah
-   tampil di layar (div #print-area disembunyikan kecuali saat mode print).
-   Sekarang kontennya ditampilkan dulu di modal preview yang bisa dilihat,
-   discroll, lalu dipilih mau "Cetak" (window.print(), untuk browser normal)
-   atau "Unduh PDF" (html2pdf.js, tidak bergantung pada dukungan print-preview
-   browser/WebView sama sekali — ini yang dipakai kalau window.print() atau
-   print preview tidak berfungsi, seperti di WebView2 aplikasi desktop). */
+   Kontennya ditampilkan dulu di modal preview yang bisa dilihat/discroll
+   sebelum dicetak (window.print()). Untuk menyimpan sebagai PDF, pilih
+   "Microsoft Print to PDF" / "Save as PDF" sebagai printer tujuan di
+   kotak dialog cetak — jadi satu jalur yang sama untuk cetak maupun PDF. */
 let lastPrintTitle = "Laporan";
 function showPrintPreview(innerHtml, title){
   lastPrintTitle = title || "Laporan";
@@ -977,11 +992,9 @@ function showPrintPreview(innerHtml, title){
       <div class="ppt-title">Pratinjau: ${escapeHtml(lastPrintTitle)}</div>
       <div class="ppt-actions">
         <button class="btn on-navy small" onclick="closePrintPreview()">Tutup</button>
-        <button class="btn on-navy small" onclick="printFromPreview()">🖨 Cetak</button>
-        <button class="btn gold small" onclick="downloadPreviewAsPdf()">⬇ Unduh PDF</button>
+        <button class="btn gold small" onclick="printFromPreview()">🖨 Cetak</button>
       </div>
     </div>
-    <div id="print-preview-pdf-status"></div>
     <div class="print-preview-page" id="print-preview-page">${innerHtml}</div>
   `;
   overlay.style.display = "flex";
@@ -991,31 +1004,9 @@ function closePrintPreview(){
   if(overlay) overlay.style.display = "none";
 }
 function printFromPreview(){
-  // Tetap sediakan jalur window.print() untuk browser yang mendukungnya normal.
+  // Untuk simpan sebagai PDF: pilih "Microsoft Print to PDF" / "Save as PDF"
+  // sebagai printer tujuan di kotak dialog cetak yang muncul.
   window.print();
-}
-function downloadPreviewAsPdf(){
-  const statusEl = document.getElementById("print-preview-pdf-status");
-  const pageEl = document.getElementById("print-preview-page");
-  if(!pageEl){ return; }
-  if(typeof html2pdf === "undefined"){
-    statusEl.textContent = "Gagal memuat pustaka PDF (perlu koneksi internet). Coba lagi atau gunakan tombol Cetak.";
-    return;
-  }
-  statusEl.textContent = "Menyiapkan PDF, mohon tunggu...";
-  const filename = (lastPrintTitle || "laporan").toLowerCase().replace(/[^a-z0-9]+/g,'-') + ".pdf";
-  html2pdf().set({
-    margin: [10, 8, 10, 8],
-    filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] }
-  }).from(pageEl).save().then(()=>{
-    statusEl.textContent = "PDF berhasil diunduh.";
-  }).catch((err)=>{
-    statusEl.textContent = "Gagal membuat PDF: " + (err?.message || err);
-  });
 }
 
 /* ---- Print dispatch ---- */
@@ -1160,7 +1151,7 @@ function printSignCol(dateLine, label, s){
       <div class="p-sig-label">${escapeHtml(label)}</div>
       <div class="p-ttd-box">${s.ttd ? `<img class="p-ttd-img" src="${s.ttd}" alt="TTD" />` : ''}</div>
       <div class="p-sig-nameline">${s.nama ? escapeHtml(s.nama) : '&nbsp;'}</div>
-      <div class="p-sig-pn">Pangkat ${s.pangkat ? escapeHtml(s.pangkat) : '...........'} &nbsp; NRP ${s.nrp ? escapeHtml(s.nrp) : '...................'}</div>
+      <div class="p-sig-pn">${s.pangkat ? escapeHtml(s.pangkat) : '...........'} &nbsp; NRP ${s.nrp ? escapeHtml(s.nrp) : '...................'}</div>
     </div>`;
 }
 function printMengetahuiHtml(){
