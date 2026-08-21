@@ -245,11 +245,13 @@
 
   #print-area{display:none;}
   @media print{
-    @page{ margin:12mm; }
+    @page{ size: A4; margin:12mm; }
     body *{visibility:hidden;}
     #print-area, #print-area *{visibility:visible;}
     #print-area{display:block !important;position:absolute;top:0;left:0;width:100%;padding:0;
       font-family:'Segoe UI',Arial,sans-serif;color:#0d1117;}
+    tr{page-break-inside:avoid;}
+    .p-band,.p-sign,.p-sig-row,.p-know-block,.p-fieldblock{page-break-inside:avoid;}
 
     .p-band{
       background:#081b3f !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;
@@ -351,6 +353,9 @@
   .print-preview-toolbar .ppt-actions{display:flex;gap:8px;flex-wrap:wrap;}
   .print-preview-page{background:#fff;width:100%;max-width:850px;padding:22px 26px;border-radius:4px;
     box-shadow:0 20px 60px rgba(0,0,0,.4);font-family:'Segoe UI',Arial,sans-serif;color:#0d1117;margin-bottom:24px;}
+  .print-preview-page tr{page-break-inside:avoid;}
+  .print-preview-page .p-band,.print-preview-page .p-sign,.print-preview-page .p-sig-row,
+  .print-preview-page .p-know-block,.print-preview-page .p-fieldblock{page-break-inside:avoid;}
   #print-preview-pdf-status{color:#fff;font-size:12.5px;margin-top:-4px;margin-bottom:10px;min-height:16px;}
 
   .print-preview-page .p-band{
