@@ -1008,9 +1008,9 @@ function downloadPreviewAsPdf(){
     margin: [10, 8, 10, 8],
     filename,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, windowWidth: pageEl.scrollWidth },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    pagebreak: { mode: ['css', 'legacy'] }
   }).from(pageEl).save().then(()=>{
     statusEl.textContent = "PDF berhasil diunduh.";
   }).catch((err)=>{
