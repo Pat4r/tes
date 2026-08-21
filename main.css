@@ -293,7 +293,7 @@
     .p-sign .space{height:52px;}
     .p-sign .signame{text-decoration:underline;font-weight:700;}
 
-    .p-ttd-box{height:38px;display:flex;align-items:center;justify-content:center;}
+    .p-ttd-box{height:28px;display:flex;align-items:center;justify-content:center;margin:2px 0;}
     .p-ttd-img{max-height:48px;max-width:130px;object-fit:contain;}
 
     .p-footbar{margin-top:16px;background:#081b3f !important;color:#fff;-webkit-print-color-adjust:exact;
@@ -323,7 +323,7 @@
     .p-sig-row{display:flex;justify-content:space-between;margin-top:18px;padding:0 10px;}
     .p-sig-col{width:46%;text-align:center;font-size:10.5px;}
     .p-sig-date{min-height:13px;margin-bottom:2px;}
-    .p-sig-label{margin-bottom:24px;font-weight:600;color:#081b3f;}
+    .p-sig-label{margin-bottom:2px;font-weight:600;color:#081b3f;}
     .p-sig-nameline{border-bottom:1px solid #000;padding-bottom:2px;margin:0 8px 3px;min-height:13px;font-weight:700;}
     .p-sig-pn{font-size:10px;}
 
@@ -389,7 +389,7 @@
   .print-preview-page .p-sign{text-align:center;font-size:11px;width:230px;flex-shrink:0;}
   .print-preview-page .p-sign .space{height:52px;}
   .print-preview-page .p-sign .signame{text-decoration:underline;font-weight:700;}
-  .print-preview-page .p-ttd-box{height:38px;display:flex;align-items:center;justify-content:center;}
+  .print-preview-page .p-ttd-box{height:28px;display:flex;align-items:center;justify-content:center;margin:2px 0;}
   .print-preview-page .p-ttd-img{max-height:48px;max-width:130px;object-fit:contain;}
   .print-preview-page .p-footbar{margin-top:16px;background:#081b3f !important;color:#fff;-webkit-print-color-adjust:exact;
       print-color-adjust:exact;text-align:center;font-size:8.5px;letter-spacing:.15em;
@@ -413,7 +413,7 @@
   .print-preview-page .p-sig-row{display:flex;justify-content:space-between;margin-top:18px;padding:0 10px;}
   .print-preview-page .p-sig-col{width:46%;text-align:center;font-size:10.5px;}
   .print-preview-page .p-sig-date{min-height:13px;margin-bottom:2px;}
-  .print-preview-page .p-sig-label{margin-bottom:24px;font-weight:600;color:#081b3f;}
+  .print-preview-page .p-sig-label{margin-bottom:2px;font-weight:600;color:#081b3f;}
   .print-preview-page .p-sig-nameline{border-bottom:1px solid #000;padding-bottom:2px;margin:0 8px 3px;min-height:13px;font-weight:700;}
   .print-preview-page .p-sig-pn{font-size:10px;}
   .print-preview-page .p-know-block{text-align:center;margin-top:18px;font-size:10.5px;}
