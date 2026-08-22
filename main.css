@@ -1,4 +1,4 @@
-  :root{
+:root{
     --navy:#081b3f;
     --navy-2:#0d2a63;
     --navy-soft:#123a82;
@@ -310,7 +310,7 @@
 
     /* ---- Laporan Kegiatan & Serah Terima: isi formulir sesuai contoh asli,
            tampilan cetak disamakan dengan Laporan Kekuatan Apel (band navy + logo + emas) ---- */
-    .p-body-text{font-size:11px;line-height:1.75;text-align:justify;margin:0 0 12px;color:#0d1117;}
+    .p-body-text{font-size:10.5px;line-height:1.55;text-align:justify;margin:0 0 8px;color:#0d1117;}
 
     .p-fieldblock{margin:0 0 14px 22px;}
     .p-fl{display:flex;font-size:11px;margin-bottom:7px;}
@@ -320,7 +320,7 @@
 
     table.p-table2, table.p-table3{width:100%;border-collapse:collapse;font-size:9.5px;margin:6px 0 4px;}
     table.p-table2 th, table.p-table2 td, table.p-table3 th, table.p-table3 td{
-      border:1px solid #9fb3cc;padding:4px 5px;text-align:center;vertical-align:top;}
+      border:1px solid #9fb3cc;padding:2.5px 5px;text-align:center;vertical-align:top;}
     table.p-table2 td.left, table.p-table3 td.left{text-align:left;}
     table.p-table2 th, table.p-table3 th{background:#081b3f !important;color:#fff !important;
       -webkit-print-color-adjust:exact;print-color-adjust:exact;font-weight:700;text-transform:uppercase;
@@ -411,7 +411,7 @@
       print-color-adjust:exact;text-align:center;font-size:8.5px;letter-spacing:.15em;
       text-transform:uppercase;padding:5px;border-radius:3px;}
   .print-preview-page /* ---- Laporan Kegiatan & Serah Terima: isi formulir sesuai contoh asli, .print-preview-page tampilan cetak disamakan dengan Laporan Kekuatan Apel (band navy + logo + emas) ---- */
-    .p-body-text{font-size:11px;line-height:1.75;text-align:justify;margin:0 0 12px;color:#0d1117;}
+    .p-body-text{font-size:10.5px;line-height:1.55;text-align:justify;margin:0 0 8px;color:#0d1117;}
   .print-preview-page .p-fieldblock{margin:0 0 14px 22px;}
   .print-preview-page .p-fl{display:flex;font-size:11px;margin-bottom:7px;}
   .print-preview-page .p-fl .k{width:68px;flex-shrink:0;font-weight:600;color:#081b3f;}
@@ -419,7 +419,7 @@
   .print-preview-page .p-fl .v{flex:1;max-width:320px;border-bottom:1px dotted #444;min-height:14px;padding-bottom:1px;}
   .print-preview-page table.p-table2, .print-preview-page table.p-table3{width:100%;border-collapse:collapse;font-size:9.5px;margin:6px 0 4px;}
   .print-preview-page table.p-table2 th, .print-preview-page table.p-table2 td, .print-preview-page table.p-table3 th, .print-preview-page table.p-table3 td{
-      border:1px solid #9fb3cc;padding:4px 5px;text-align:center;vertical-align:top;}
+      border:1px solid #9fb3cc;padding:2.5px 5px;text-align:center;vertical-align:top;}
   .print-preview-page table.p-table2 td.left, .print-preview-page table.p-table3 td.left{text-align:left;}
   .print-preview-page table.p-table2 th, .print-preview-page table.p-table3 th{background:#081b3f !important;color:#fff !important;
       -webkit-print-color-adjust:exact;print-color-adjust:exact;font-weight:700;text-transform:uppercase;
