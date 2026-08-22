@@ -68,6 +68,11 @@ async function fsSet(key, value){
 /* ================= CONFIG & CONSTANTS ================= */
 // Kategori sesuai kolom "KETERANGAN KURANG" pada formulir Laporan Kekuatan Apel
 const KURANG_CODES = ["DD","DL","DIK","C","I","S","MPP","TL","TO","DIS","BP","THN"];
+const KET_LABELS = {
+  DD:"Dinas Dalam", DL:"Dinas Luar", DIK:"Pendidikan", C:"Cuti", I:"Izin", S:"Sakit",
+  MPP:"Mengikuti Perintah Pimpinan", TL:"Terlambat", TO:"Tanpa Keterangan",
+  DIS:"Dinas", BP:"Belajar / Penataran", THN:"Tugas Belajar"
+};
 const STATUS_OPTIONS = ["Hadir", ...KURANG_CODES];
 const CODE_COLOR = {
   "Hadir":"#1f7a4d","DD":"#1565d8","DL":"#0d2a63","DIK":"#2f6fce","C":"#123a82",
@@ -89,6 +94,11 @@ const LOGO_SRC = "logo.jpg";
 const VIDEO_SRC = "intro.mp4";
 
 function todayStr(){ return new Date().toISOString().slice(0,10); }
+function addOneDayStr(dateStr){
+  const d = new Date(dateStr+"T00:00:00");
+  d.setDate(d.getDate()+1);
+  return d.toISOString().slice(0,10);
+}
 function fmtDate(d){
   const dt = new Date(d+"T00:00:00");
   return dt.toLocaleDateString('id-ID',{weekday:'long', year:'numeric', month:'long', day:'numeric'});
@@ -807,24 +817,29 @@ function signerCardEditHtml(screenType, role, label, s){
       </div>
     </div>`;
 }
-/* Pa Jaga Lama/Baru diisi di Serah Terima adalah sumber data utama:
-   begitu diisi di sana, otomatis disalin ke Laporan Kegiatan supaya
-   tidak perlu isi dua kali. (Field "Mengetahui/Komandan" tidak ikut
-   disinkron, karena itu memang berbeda per laporan.) */
-async function mirrorSignerToKegiatan(role, key, val){
+/* Pa Jaga Lama/Baru harus selalu sama persis antara Laporan Kegiatan
+   dan Serah Terima — apapun yang diisi/diubah di salah satu form,
+   otomatis disalin ke form satunya, supaya saat dicetak keduanya
+   pasti cocok. (Field "Mengetahui/Komandan" tidak ikut disinkron,
+   karena itu memang berbeda per laporan.) */
+async function mirrorSignerField(sourceScreenType, role, key, val){
   if(role !== 'paJagaLama' && role !== 'paJagaBaru') return;
-  if(!kegiatanData) kegiatanData = await getKegiatan(state.operatorDate);
-  kegiatanData[role][key] = val;
-  await saveKegiatan(state.operatorDate, kegiatanData);
+  if(sourceScreenType === 'kegiatan'){
+    if(!serahTerimaData) serahTerimaData = await getSerahTerimaData(state.operatorDate);
+    serahTerimaData[role][key] = val;
+    await saveSerahTerimaData(state.operatorDate, serahTerimaData);
+  } else {
+    if(!kegiatanData) kegiatanData = await getKegiatan(state.operatorDate);
+    kegiatanData[role][key] = val;
+    await saveKegiatan(state.operatorDate, kegiatanData);
+  }
 }
 async function setSignerField(screenType, role, key, val){
   const data = screenType==='kegiatan' ? kegiatanData : serahTerimaData;
   data[role][key] = val;
   if(screenType==='kegiatan') await saveKegiatan(state.operatorDate, data);
-  else {
-    await saveSerahTerimaData(state.operatorDate, data);
-    await mirrorSignerToKegiatan(role, key, val);
-  }
+  else await saveSerahTerimaData(state.operatorDate, data);
+  await mirrorSignerField(screenType, role, key, val);
 }
 function uploadSignerTtd(screenType, role, inputEl){
   const file = inputEl.files[0]; if(!file) return;
@@ -833,10 +848,8 @@ function uploadSignerTtd(screenType, role, inputEl){
     const data = screenType==='kegiatan' ? kegiatanData : serahTerimaData;
     data[role].ttd = e.target.result;
     if(screenType==='kegiatan') await saveKegiatan(state.operatorDate, data);
-    else {
-      await saveSerahTerimaData(state.operatorDate, data);
-      await mirrorSignerToKegiatan(role, 'ttd', e.target.result);
-    }
+    else await saveSerahTerimaData(state.operatorDate, data);
+    await mirrorSignerField(screenType, role, 'ttd', e.target.result);
     renderOperator(true);
   };
   reader.readAsDataURL(file);
@@ -845,10 +858,8 @@ async function removeSignerTtd(screenType, role){
   const data = screenType==='kegiatan' ? kegiatanData : serahTerimaData;
   data[role].ttd = "";
   if(screenType==='kegiatan') await saveKegiatan(state.operatorDate, data);
-  else {
-    await saveSerahTerimaData(state.operatorDate, data);
-    await mirrorSignerToKegiatan(role, 'ttd', "");
-  }
+  else await saveSerahTerimaData(state.operatorDate, data);
+  await mirrorSignerField(screenType, role, 'ttd', "");
   renderOperator(true);
 }
 
@@ -857,8 +868,8 @@ function kegiatanScreenHtml(){
   const d = kegiatanData || emptyKegiatan(state.operatorDate);
   return `
     <div class="field-row-2" style="margin-bottom:18px;">
-      <div class="field"><label>TMT (Mulai)</label><input type="date" value="${d.tmtStart}" onchange="setKegiatanMeta('tmtStart', this.value)" /></div>
-      <div class="field"><label>s.d. (Selesai)</label><input type="date" value="${d.tmtEnd}" onchange="setKegiatanMeta('tmtEnd', this.value)" /></div>
+      <div class="field"><label>TMT (Mulai)</label><input type="date" value="${d.tmtStart}" min="${todayStr()}" onchange="setKegiatanMeta('tmtStart', this.value)" /></div>
+      <div class="field"><label>s.d. (Selesai)</label><input type="date" value="${d.tmtEnd}" min="${d.tmtStart || todayStr()}" onchange="setKegiatanMeta('tmtEnd', this.value)" /></div>
     </div>
     <div class="panel" style="padding:16px;margin-bottom:18px;">
       <div class="edit-table-wrap">
@@ -890,7 +901,11 @@ function kegiatanScreenHtml(){
 }
 async function setKegiatanMeta(key, val){
   kegiatanData[key] = val;
+  if(key === 'tmtStart' && val){
+    kegiatanData.tmtEnd = addOneDayStr(val);
+  }
   await saveKegiatan(state.operatorDate, kegiatanData);
+  if(key === 'tmtStart') renderOperator(true);
 }
 async function addKegiatanRow(){
   kegiatanData.rows.push(newKegiatanRow());
@@ -916,8 +931,8 @@ function serahTerimaScreenHtml(){
       <div class="field"><label>Tanggal Sprin</label><input type="date" value="${d.sprinTanggal}" onchange="setSerahTerimaMeta('sprinTanggal', this.value)" /></div>
     </div>
     <div class="field-row-2" style="margin-bottom:14px;">
-      <div class="field"><label>TMT (Mulai)</label><input type="date" value="${d.tmtStart}" onchange="setSerahTerimaMeta('tmtStart', this.value)" /></div>
-      <div class="field"><label>s.d. (Selesai)</label><input type="date" value="${d.tmtEnd}" onchange="setSerahTerimaMeta('tmtEnd', this.value)" /></div>
+      <div class="field"><label>TMT (Mulai)</label><input type="date" value="${d.tmtStart}" min="${todayStr()}" onchange="setSerahTerimaMeta('tmtStart', this.value)" /></div>
+      <div class="field"><label>s.d. (Selesai)</label><input type="date" value="${d.tmtEnd}" min="${d.tmtStart || todayStr()}" onchange="setSerahTerimaMeta('tmtEnd', this.value)" /></div>
     </div>
     <div class="field" style="max-width:260px;margin-bottom:22px;"><label>Keadaan</label><input value="${escapeHtml(d.keadaan)}" placeholder="Aman" onchange="setSerahTerimaMeta('keadaan', this.value)" /></div>
 
@@ -952,7 +967,11 @@ function serahTerimaScreenHtml(){
 }
 async function setSerahTerimaMeta(key, val){
   serahTerimaData[key] = val;
+  if(key === 'tmtStart' && val){
+    serahTerimaData.tmtEnd = addOneDayStr(val);
+  }
   await saveSerahTerimaData(state.operatorDate, serahTerimaData);
+  if(key === 'tmtStart') renderOperator(true);
 }
 async function addBarangRow(){
   serahTerimaData.barang.push(newBarangRow());
@@ -1057,6 +1076,37 @@ async function confirmPrintDialog(){
   closeModal();
   printReport();
 }
+function buildAbsentListHtml(){
+  const groups = {};
+  KURANG_CODES.forEach(c=>groups[c]=[]);
+  state.bagianList.forEach(b=>{
+    const att = operatorData[b.id];
+    b.personnel.forEach(p=>{
+      const r = att.records[p.id];
+      const status = r ? r.status : "Hadir";
+      if(status === "Hadir" || !groups[status]) return;
+      groups[status].push({ nama:p.nama, pangkat:p.pangkat||"", note: r ? r.note : "" });
+    });
+  });
+  let cats = "";
+  KURANG_CODES.forEach(code=>{
+    const list = groups[code];
+    if(!list.length) return;
+    cats += `
+      <div class="p-absent-cat">
+        <div class="p-absent-head" style="color:${CODE_COLOR[code]}">${code} (${list.length})</div>
+        <ol class="p-absent-list">
+          ${list.map(x=>`<li>${x.pangkat?escapeHtml(x.pangkat)+' ':''}${escapeHtml(x.nama)}${x.note?` <span class="p-absent-note">(${escapeHtml(x.note)})</span>`:''}</li>`).join("")}
+        </ol>
+      </div>`;
+  });
+  if(!cats) return `<div class="p-bottom2"><p class="p-body-text" style="margin:0;">Seluruh personel berstatus <b>Hadir</b> — tidak ada personel dengan keterangan kurang.</p></div>`;
+  return `
+    <div class="p-bottom2">
+      <p class="lg-title">Daftar Personel Selain Hadir</p>
+      <div class="p-absent-grid">${cats}</div>
+    </div>`;
+}
 function printReport(){
   const totals = { jml:0, krg:0, hdr:0, counts:{} };
   KURANG_CODES.forEach(c=>totals.counts[c]=0);
@@ -1073,12 +1123,6 @@ function printReport(){
       <td class="p-bagian">${escapeHtml(att.ket||'')}</td>
     </tr>`;
   });
-  const KET_LABELS = {
-    DD:"Dinas Dalam", DL:"Dinas Luar", DIK:"Pendidikan", C:"Cuti", I:"Izin", S:"Sakit",
-    MPP:"Mengikuti Perintah Pimpinan", TL:"Terlambat", TO:"Tanpa Keterangan",
-    DIS:"Dinas", BP:"Belajar / Penataran", THN:"Tugas Belajar"
-  };
-  const legendCols = [KURANG_CODES.slice(0,6), KURANG_CODES.slice(6)];
   const html = `
     <div class="p-band">
       <img class="p-logo" src="${LOGO_SRC}" alt="Logo" />
@@ -1110,13 +1154,8 @@ function printReport(){
         </tr>
       </tfoot>
     </table>
-    <div class="p-bottom">
-      <div class="p-legend">
-        <p class="lg-title">Keterangan Singkatan</p>
-        <div class="lg-grid">
-          ${legendCols.map(col=>`<div>${col.map(c=>`<div><b>${c}</b> : ${KET_LABELS[c]}</div>`).join("")}</div>`).join("")}
-        </div>
-      </div>
+    ${buildAbsentListHtml()}
+    <div class="p-bottom" style="justify-content:flex-end;">
       <div class="p-sign">
         <div>${escapeHtml(state.instansi.kota)}, ${fmtDateShort(state.operatorDate)}</div>
         <div>Pa Jaga</div>
@@ -1154,18 +1193,7 @@ function printSignCol(dateLine, label, s){
       <div class="p-sig-pn">${s.pangkat ? escapeHtml(s.pangkat) : '...........'} &nbsp; NRP ${s.nrp ? escapeHtml(s.nrp) : '...................'}</div>
     </div>`;
 }
-function printMengetahuiHtml(){
-  const m = state.mengetahui || defaultMengetahui();
-  const lines = (m.jabatanChain || '').split('\n');
-  return `
-    <div class="p-know-block">
-      ${lines.map(l=>`<div>${escapeHtml(l)}</div>`).join('')}
-      <div class="ttdspace">${m.ttd ? `<img class="p-ttd-img" src="${m.ttd}" alt="TTD" />` : ''}</div>
-      <div class="nameline">${escapeHtml(m.nama || '')}</div>
-      <div>${escapeHtml(m.pangkat || '')}${m.pangkat && m.nrp ? ' ' : ''}${m.nrp ? 'NRP ' + escapeHtml(m.nrp) : ''}</div>
-    </div>`;
-}
-// Blok "Mengetahui" dengan Nama/Pangkat/NRP diisi manual per laporan (dipakai di Laporan Kegiatan)
+// Blok "Mengetahui" dengan Nama/Pangkat/NRP diisi manual per laporan (dipakai di Laporan Kegiatan & Serah Terima)
 function printKnowBlockManual(chainLines, s){
   s = s || emptySigner();
   return `
@@ -1210,7 +1238,7 @@ function printKegiatan(){
 }
 
 /* ---- Print: Serah Terima ---- */
-function printSerahTerima(){
+async function printSerahTerima(){
   const d = serahTerimaData || emptySerahTerima(state.operatorDate);
   const sprinYear = d.sprinTanggal ? new Date(d.sprinTanggal+"T00:00:00").getFullYear() : new Date().getFullYear();
   const barangRows = (d.barang && d.barang.length ? d.barang : [newBarangRow()]).map((b,i)=>`<tr>
@@ -1250,7 +1278,7 @@ function printSerahTerima(){
       ${printSignCol('', 'Pa Jaga Baru', d.paJagaBaru)}
       ${printSignCol(`${escapeHtml(state.instansi.kota)}, ${dmyOrBlank(state.operatorDate)}`, 'Pa Jaga Lama', d.paJagaLama)}
     </div>
-    ${printMengetahuiHtml()}
+    ${printKnowBlockManual(["Mengetahui","a.n. Komandan Pusdikkomlek","Kabagum","u.b.","Kasipamops,"], kegiatanData ? kegiatanData.komandan : (await getKegiatan(state.operatorDate)).komandan)}
     <div class="p-footbar">Profesional &nbsp;•&nbsp; Responsif &nbsp;•&nbsp; Adaptif</div>
   `;
   showPrintPreview(html, `Serah Terima - ${fmtDateShort(state.operatorDate)}`);
