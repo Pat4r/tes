@@ -283,6 +283,14 @@
       -webkit-print-color-adjust:exact;print-color-adjust:exact;border:1px solid #081b3f;}
 
     .p-bottom{display:flex;justify-content:space-between;align-items:flex-start;margin-top:18px;gap:16px;}
+    .p-bottom2{margin-top:14px;font-size:9px;border:1px solid #9fb3cc;border-radius:4px;padding:8px 12px;page-break-inside:avoid;}
+    .p-bottom2 .lg-title{font-weight:700;font-size:9.5px;text-transform:uppercase;color:#081b3f;margin:0 0 6px;}
+    .p-absent-grid{display:grid;grid-template-columns:repeat(4, 1fr);column-gap:16px;row-gap:8px;}
+    .p-absent-cat{margin-bottom:0;}
+    .p-absent-head{font-weight:700;font-size:9px;margin-bottom:2px;white-space:nowrap;}
+    .p-absent-list{margin:0;padding-left:16px;}
+    .p-absent-list li{margin-bottom:1px;}
+    .p-absent-note{color:#6b7280;}
     .p-legend{font-size:9px;border:1px solid #9fb3cc;border-radius:4px;padding:8px 12px;flex:1;}
     .p-legend .lg-title{font-weight:700;font-size:9.5px;text-transform:uppercase;color:#081b3f;margin:0 0 6px;}
     .p-legend .lg-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;}
@@ -381,6 +389,14 @@
   .print-preview-page table.p-table tfoot td{font-weight:800;background:#bcdcff !important;color:#081b3f !important;
       -webkit-print-color-adjust:exact;print-color-adjust:exact;border:1px solid #081b3f;}
   .print-preview-page .p-bottom{display:flex;justify-content:space-between;align-items:flex-start;margin-top:18px;gap:16px;}
+  .print-preview-page .p-bottom2{margin-top:14px;font-size:9px;border:1px solid #9fb3cc;border-radius:4px;padding:8px 12px;}
+  .print-preview-page .p-bottom2 .lg-title{font-weight:700;font-size:9.5px;text-transform:uppercase;color:#081b3f;margin:0 0 6px;}
+  .print-preview-page .p-absent-grid{display:grid;grid-template-columns:repeat(4, 1fr);column-gap:16px;row-gap:8px;}
+  .print-preview-page .p-absent-cat{margin-bottom:0;}
+  .print-preview-page .p-absent-head{font-weight:700;font-size:9px;margin-bottom:2px;white-space:nowrap;}
+  .print-preview-page .p-absent-list{margin:0;padding-left:16px;}
+  .print-preview-page .p-absent-list li{margin-bottom:1px;}
+  .print-preview-page .p-absent-note{color:#6b7280;}
   .print-preview-page .p-legend{font-size:9px;border:1px solid #9fb3cc;border-radius:4px;padding:8px 12px;flex:1;}
   .print-preview-page .p-legend .lg-title{font-weight:700;font-size:9.5px;text-transform:uppercase;color:#081b3f;margin:0 0 6px;}
   .print-preview-page .p-legend .lg-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;}
